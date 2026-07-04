@@ -23,13 +23,14 @@ WORKFLOWS = {
 # Get token from env: PAT > GITHUB_TOKEN > local file
 TOKEN = os.environ.get("PAT") or os.environ.get("GITHUB_TOKEN") or ""
 if not TOKEN:
-    token_file = os.path.join(os.path.dirname(__file__), ".token")
+    token_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".token")
     if os.path.exists(token_file):
         with open(token_file) as f:
             TOKEN = f.read().strip()
 if not TOKEN:
     print("ERROR: No token found. Set PAT env var or create .token file")
     sys.exit(1)
+
 HEADERS = {
     "Authorization": f"Bearer {TOKEN}",
     "Accept": "application/vnd.github.v3+json",
@@ -57,7 +58,7 @@ def get_latest_runs():
         runs = data.get("workflow_runs", [])
         return runs
     except Exception as e:
-        print(f"[{now_str()}] ⚠️ API error: {e}")
+        print(f"[{now_str()}] WARN: API error: {e}")
         return []
 
 
@@ -70,10 +71,10 @@ def trigger_workflow(wf_name, wf_file):
             stats["triggered"] += 1
             return True
         else:
-            print(f"[{now_str()}] ❌ Trigger {wf_name} failed: HTTP {r.status_code}")
+            print(f"[{now_str()}] FAIL: Trigger {wf_name} failed: HTTP {r.status_code}")
             return False
     except Exception as e:
-        print(f"[{now_str()}] ❌ Trigger {wf_name} error: {e}")
+        print(f"[{now_str()}] FAIL: Trigger {wf_name} error: {e}")
         return False
 
 
@@ -104,62 +105,59 @@ def check_and_heal():
                     health[wf_id]["queued"] = True
                 break  # Only count latest run per workflow
 
-    # Build status line
+    # Build status line (ASCII only for Windows compat)
     status_parts = []
     all_healthy = True
 
     for wf_id in ["A", "B", "C"]:
         h = health[wf_id]
         if h["running"]:
-            status_parts.append(f"{wf_id}:🟢")
+            status_parts.append(f"{wf_id}:RUNNING")
         elif h["queued"]:
-            status_parts.append(f"{wf_id}:🟡")
+            status_parts.append(f"{wf_id}:queued ")
         else:
-            # Check if there was a recent run (within threshold)
             if h["last_seen"]:
                 age = (now_utc - h["last_seen"]).total_seconds()
                 if age > STALE_THRESHOLD:
-                    status_parts.append(f"{wf_id}:🔴(stale {int(age)}s)")
+                    status_parts.append(f"{wf_id}:DEAD({int(age)}s)")
                     all_healthy = False
                 else:
-                    # Recent completion - normal
-                    status_parts.append(f"{wf_id}:⏳(ended {int(age)}s ago)")
+                    status_parts.append(f"{wf_id}:wait({int(age)}s)")
             else:
-                status_parts.append(f"{wf_id}:❓")
+                status_parts.append(f"{wf_id}:???    ")
                 all_healthy = False
 
-    print(f"[{now_str()}] #{stats['checks']} {' | '.join(status_parts)}", end="")
+    line = f"[{now_str()}] #{stats['checks']:03d} | {' | '.join(status_parts)}"
+    if all_healthy:
+        line += " | OK"
+    else:
+        line += " | HEALING"
+
+    print(line)
 
     if not all_healthy:
-        print("  ⚠️ HEALING...")
         for wf_id, wf_file in WORKFLOWS.items():
             h = health[wf_id]
             if not h["running"] and not h["queued"]:
                 if h["last_seen"] is None or (now_utc - h["last_seen"]).total_seconds() > STALE_THRESHOLD:
-                    print(f"  ↳ Triggering {wf_id}...")
+                    print(f"  -> Triggering {wf_id}...")
                     trigger_workflow(wf_id, wf_file)
-                    time.sleep(2)  # Brief gap between triggers
-    else:
-        print()  # Newline for status line
+                    time.sleep(2)
 
 
 def main():
-    print("╔══════════════════════════════════════╗")
-    print("║  pnation.com DB Flood Watchdog      ║")
-    print("╠══════════════════════════════════════╣")
-    print(f"║  Interval: {CHECK_INTERVAL}s                     ║")
-    print(f"║  Stale threshold: {STALE_THRESHOLD}s              ║")
-    print("║  Auto-heal: ON                      ║")
-    print("╚══════════════════════════════════════╝")
-    print(f"Started: {datetime.now(CST).strftime('%Y-%m-%d %H:%M:%S')} CST")
-    print()
+    print("=" * 55)
+    print("  pnation.com DB Flood Watchdog")
+    print(f"  Interval: {CHECK_INTERVAL}s | Stale: {STALE_THRESHOLD}s | Auto-heal: ON")
+    print(f"  Started: {datetime.now(CST).strftime('%Y-%m-%d %H:%M:%S')} CST")
+    print("=" * 55)
 
     try:
         while True:
             check_and_heal()
             time.sleep(CHECK_INTERVAL)
     except KeyboardInterrupt:
-        print(f"\n[{now_str()}] Watchdog stopped. Total checks: {stats['checks']}, triggered: {stats['triggered']}")
+        print(f"\n[{now_str()}] Stopped. Checks: {stats['checks']}, Triggered: {stats['triggered']}")
 
 
 if __name__ == "__main__":
