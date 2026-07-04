@@ -1,0 +1,27 @@
+name: pnation-flood-B
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '40 */2 * * *'  # Every 2 hours at :40
+
+jobs:
+  flood:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 20
+      matrix:
+        node: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+    
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install requests
+      - name: Run DB Flood
+        env:
+          NODE_ID: "B-${{ matrix.node }}"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SUSTAIN_NEXT: "pnation_flood_c.yml"
+        run: python pnation_db_flood.py
