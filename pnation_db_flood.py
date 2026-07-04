@@ -107,9 +107,7 @@ def flood_search():
     search_terms = [
         "test", "hello", "world", "admin", "security",
         "database", "mysql", "php", "apache", "linux",
-        "".join(random.choices(string.ascii_lowercase, k=random.randint(2, 8)))
-        for _ in range(40)
-    ]
+    ] + ["".join(random.choices(string.ascii_lowercase, k=random.randint(2, 8))) for _ in range(40)]
     # Unicode-heavy terms to force charset conversion overhead
     unicode_terms = [
         "한국어검색", "日本語検索", "中文搜索", "поиск",
