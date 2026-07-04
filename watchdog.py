@@ -38,9 +38,9 @@ HEADERS = {
 API_BASE = f"https://api.github.com/repos/{REPO}"
 
 CST = timezone(timedelta(hours=8))
-CHECK_INTERVAL = 30  # seconds
-STALE_THRESHOLD = 120  # seconds - wait 2min before healing (avoid sustain overlap)
-ANTI_SPAM = 45  # seconds - don't trigger if any run was created in last 45s
+CHECK_INTERVAL = 60  # seconds
+STALE_THRESHOLD = 300  # seconds - 5 min gap before healing
+ANTI_SPAM = 120  # seconds - don't trigger if any run created in last 2min
 
 stats = {"triggered": 0, "checks": 0}
 
