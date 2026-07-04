@@ -82,6 +82,22 @@ def trigger_workflow(wf_name, wf_file):
         return False
 
 
+def clean_own_old_queues():
+    """Cancel old queued watchdog runs (keep only latest)"""
+    url = f"{API_BASE}/actions/workflows/pnation_watchdog.yml/runs?per_page=10&status=queued"
+    try:
+        r = requests.get(url, headers=HEADERS, timeout=10)
+        queued = r.json().get("workflow_runs", [])
+        if len(queued) <= 1:
+            return
+        ids = sorted([q["id"] for q in queued], reverse=True)
+        for old_id in ids[1:]:
+            requests.post(f"{API_BASE}/actions/runs/{old_id}/cancel", headers=HEADERS, timeout=5)
+            print(f"[{now_str()}] Cleaned old watchdog run {old_id}")
+    except Exception as e:
+        pass  # Non-critical
+
+
 def check_and_heal():
     """Main watchdog loop"""
     stats["checks"] += 1
@@ -160,6 +176,8 @@ def main():
     print(f"  Mode: {'single-check (GitHub Actions)' if once else 'continuous'}")
     print(f"  Started: {datetime.now(CST).strftime('%Y-%m-%d %H:%M:%S')} CST")
     print("=" * 55)
+
+    clean_own_old_queues()  # Clean previous watchdog queued runs
 
     try:
         if once:
