@@ -41,8 +41,8 @@ HEADERS = {
 API_BASE = f"https://api.github.com/repos/{REPO}"
 
 CST = timezone(timedelta(hours=8))
-CHECK_INTERVAL = 60  # seconds
-STALE_THRESHOLD = 300  # seconds - 5 min gap before healing
+CHECK_INTERVAL = 300  # seconds
+STALE_THRESHOLD = 3600  # 1 hour - queued runs may wait a long time for runners
 ANTI_SPAM = 120  # seconds - don't trigger if any run created in last 2min
 
 stats = {"triggered": 0, "checks": 0}
@@ -107,7 +107,7 @@ def check_and_heal():
                     health[wf_id]["running"] = True
                 elif status == "queued":
                     health[wf_id]["queued"] = True
-                break  # Only count latest run per workflow
+                # Don't break: process ALL runs, not just the latest one
 
     # Build status line (ASCII only for Windows compat)
     status_parts = []
