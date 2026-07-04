@@ -207,7 +207,7 @@ def flood_session():
 # ===========================
 def sustain_trigger():
     """Call GitHub API to dispatch the next workflow run — infinite loop"""
-    token = os.environ.get("GITHUB_TOKEN", "")
+    token = os.environ.get("PAT", "")  # Use PAT (has workflow_dispatch permission)
     repo = os.environ.get("GITHUB_REPOSITORY", "wake875/pnation-db-flood")
     
     if not token:
