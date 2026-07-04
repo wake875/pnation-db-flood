@@ -1,0 +1,25 @@
+name: pnation-flood-E
+
+on:
+  workflow_dispatch:
+
+jobs:
+  flood:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 10
+      matrix:
+        node: [1,2,3,4,5,6,7,8,9,10]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install requests
+      - name: Run DB Flood v3 (Origin IP)
+        env:
+          NODE_ID: "E-${{ matrix.node }}"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PAT: ${{ secrets.PAT }}
+          SUSTAIN_NEXT: "pnation_flood_f.yml"
+        run: python pnation_db_flood_v3.py
