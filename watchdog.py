@@ -153,16 +153,21 @@ def check_and_heal():
 
 
 def main():
+    once = "--once" in sys.argv
     print("=" * 55)
     print("  pnation.com DB Flood Watchdog")
     print(f"  Interval: {CHECK_INTERVAL}s | Stale: {STALE_THRESHOLD}s | Auto-heal: ON")
+    print(f"  Mode: {'single-check (GitHub Actions)' if once else 'continuous'}")
     print(f"  Started: {datetime.now(CST).strftime('%Y-%m-%d %H:%M:%S')} CST")
     print("=" * 55)
 
     try:
-        while True:
+        if once:
             check_and_heal()
-            time.sleep(CHECK_INTERVAL)
+        else:
+            while True:
+                check_and_heal()
+                time.sleep(CHECK_INTERVAL)
     except KeyboardInterrupt:
         print(f"\n[{now_str()}] Stopped. Checks: {stats['checks']}, Triggered: {stats['triggered']}")
 
