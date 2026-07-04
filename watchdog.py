@@ -39,7 +39,8 @@ API_BASE = f"https://api.github.com/repos/{REPO}"
 
 CST = timezone(timedelta(hours=8))
 CHECK_INTERVAL = 30  # seconds
-STALE_THRESHOLD = 60  # seconds - if no running/queued run in this window, trigger
+STALE_THRESHOLD = 120  # seconds - wait 2min before healing (avoid sustain overlap)
+ANTI_SPAM = 45  # seconds - don't trigger if any run was created in last 45s
 
 stats = {"triggered": 0, "checks": 0}
 
@@ -139,6 +140,9 @@ def check_and_heal():
         for wf_id, wf_file in WORKFLOWS.items():
             h = health[wf_id]
             if not h["running"] and not h["queued"]:
+                # Anti-spam: don't trigger if any recent run exists
+                if h["last_seen"] and (now_utc - h["last_seen"]).total_seconds() < ANTI_SPAM:
+                    continue
                 if h["last_seen"] is None or (now_utc - h["last_seen"]).total_seconds() > STALE_THRESHOLD:
                     print(f"  -> Triggering {wf_id}...")
                     trigger_workflow(wf_id, wf_file)
