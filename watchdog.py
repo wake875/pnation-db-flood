@@ -15,9 +15,12 @@ from datetime import datetime, timezone, timedelta
 # Config
 REPO = "wake875/pnation-db-flood"
 WORKFLOWS = {
-    "A": "pnation_flood_a.yml",
-    "B": "pnation_flood_b.yml",
-    "C": "pnation_flood_c.yml",
+    "A": "pnation_flood_a.yml",  # v2 domain
+    "B": "pnation_flood_b.yml",  # v2 domain
+    "C": "pnation_flood_c.yml",  # v2 domain
+    "D": "pnation_flood_d.yml",  # v3 origin IP
+    "E": "pnation_flood_e.yml",  # v3 origin IP
+    "F": "pnation_flood_f.yml",  # v3 origin IP
 }
 
 # Get token from env: PAT > GITHUB_TOKEN > local file
@@ -110,7 +113,7 @@ def check_and_heal():
     status_parts = []
     all_healthy = True
 
-    for wf_id in ["A", "B", "C"]:
+    for wf_id in WORKFLOWS:
         h = health[wf_id]
         if h["running"]:
             status_parts.append(f"{wf_id}:RUNNING")
