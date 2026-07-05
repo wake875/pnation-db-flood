@@ -54,7 +54,7 @@ def now_str():
 
 def get_latest_runs():
     """Get latest workflow runs, return dict {name: status_list}"""
-    url = f"{API_BASE}/actions/runs?per_page=15&event=workflow_dispatch"
+    url = f"{API_BASE}/actions/runs?per_page=50&event=workflow_dispatch"
     try:
         r = requests.get(url, headers=HEADERS, timeout=10)
         r.raise_for_status()
