@@ -74,7 +74,7 @@ def git_commit_push():
         # Push using PAT
         token = os.environ.get('PAT') or os.environ.get('GITHUB_TOKEN')
         if token:
-            subprocess.run(['git', 'push', f'https://x-access-token:{token}@github.com/wake875/pnation-db-flood.git', 'main'],
+            subprocess.run(['git', 'push', f'https://x-access-token:{token}@github.com/wake875/project-b81494.git', 'main'],
                           cwd=REPO_DIR, check=True, capture_output=True)
             print(f"Pushed IP update: {new_ip}")
     except Exception as e:

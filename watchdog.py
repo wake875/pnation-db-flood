@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-pnation-db-flood Watchdog
+project-b81494 Watchdog
 =========================
 实时监控 A/B/C 三个 workflow 状态，挂了自动拉起。
 每 30 秒轮询一次。
@@ -13,7 +13,7 @@ import requests
 from datetime import datetime, timezone, timedelta
 
 # Config
-REPO = "wake875/pnation-db-flood"
+REPO = "wake875/project-b81494"
 WORKFLOWS = {
     "A": "pnation_flood_a.yml",  # v2 domain
     "B": "pnation_flood_b.yml",  # v2 domain
