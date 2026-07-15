@@ -5,6 +5,10 @@ on:
   schedule:
     - cron: '0 */2 * * *'  # Every 2 hours at :00
 
+permissions:
+  actions: write
+  contents: read
+
 jobs:
   flood:
     runs-on: ubuntu-latest
@@ -23,6 +27,5 @@ jobs:
         env:
           NODE_ID: "A-${{ matrix.node }}"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PAT: ${{ secrets.PAT }}
           SUSTAIN_NEXT: "pnation_flood_b.yml"
         run: python pnation_db_flood.py

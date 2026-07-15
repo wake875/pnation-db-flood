@@ -3,6 +3,10 @@ name: pnation-flood-D
 on:
   workflow_dispatch:
 
+permissions:
+  actions: write
+  contents: read
+
 jobs:
   flood:
     runs-on: ubuntu-latest
@@ -21,6 +25,5 @@ jobs:
         env:
           NODE_ID: "D-${{ matrix.node }}"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PAT: ${{ secrets.PAT }}
           SUSTAIN_NEXT: "pnation_flood_e.yml"
         run: python pnation_db_flood_v3.py

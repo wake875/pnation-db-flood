@@ -5,6 +5,10 @@ on:
     - cron: '*/30 * * * *'  # Every 30 minutes
   workflow_dispatch:
 
+permissions:
+  actions: write
+  contents: read
+
 jobs:
   watchdog:
     runs-on: ubuntu-latest
@@ -16,6 +20,5 @@ jobs:
       - run: pip install requests
       - name: Check & Heal
         env:
-          PAT: ${{ secrets.PAT }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python watchdog.py --once
